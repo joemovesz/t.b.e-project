@@ -4,17 +4,36 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>T.B.E Bazuri | Premium Content Hub</title>
-  <meta name="description" content="Videos, images, news and more — curated by T.B.E Bazuri">
+  <meta name="description" content="Videos, images, news and more — curated by T.B.E Bazuri. Admin-only publishing with likes, comments, and more.">
+  <meta name="keywords" content="T.B.E Bazuri, videos, images, news, content hub, admin publishing">
+  <meta name="author" content="T.B.E Bazuri">
+  <meta property="og:title" content="T.B.E Bazuri | Premium Content Hub">
+  <meta property="og:description" content="Videos, images, news and more — curated by T.B.E Bazuri.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://joemovesz.github.io/t.b.e-project/">
+  <meta property="og:image" content="https://joemovesz.github.io/t.b.e-project/logo/t.b.e_logo.png">
+  <meta property="og:site_name" content="T.B.E Bazuri">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="T.B.E Bazuri | Premium Content Hub">
+  <meta name="twitter:description" content="Videos, images, news and more — curated by T.B.E Bazuri.">
+  <meta name="twitter:image" content="https://joemovesz.github.io/t.b.e-project/logo/t.b.e_logo.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="logo/t.b.e_logo.png">
+  <link rel="apple-touch-icon" href="logo/t.b.e_logo.png">
+  <meta name="theme-color" content="#2563eb">
   <style>
     body { font-family: 'Inter', sans-serif; }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
+
+  <!-- Skip to content -->
+  <a href="#mainContent" class="skip-link">Skip to main content</a>
 
   <!-- Navbar -->
   <nav class="navbar bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
@@ -54,7 +73,7 @@
   </section>
 
   <!-- Posts Grid -->
-  <section class="py-12">
+  <section id="mainContent" class="py-12" tabindex="-1">
     <div class="container">
       <div class="flex justify-between items-end mb-8 flex-wrap gap-4">
         <div>
@@ -108,6 +127,16 @@
   <script src="js/toast.js"></script>
   <script src="js/home.js"></script>
   <script src="js/lightbox.js"></script>
+  <script>
+    // Register Service Worker for PWA
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js").then((reg) => {
+        console.log("Service Worker registered:", reg.scope);
+      }).catch((err) => {
+        console.log("Service Worker registration failed:", err);
+      });
+    }
+  </script>
   <script>
     // Initialize theme
     document.addEventListener("DOMContentLoaded", () => {

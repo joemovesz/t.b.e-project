@@ -3,10 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Post | T.B.E Bazuri</title>
+  <title id="pageTitle">Post | T.B.E Bazuri</title>
+  <meta name="description" id="metaDescription" content="">
+  <meta property="og:title" id="ogTitle" content="">
+  <meta property="og:description" id="ogDescription" content="">
+  <meta property="og:type" content="article">
+  <meta property="og:url" id="ogUrl" content="">
+  <meta property="og:image" id="ogImage" content="https://joemovesz.github.io/t.b.e-project/logo/t.b.e_logo.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" id="twitterTitle" content="">
+  <meta name="twitter:description" id="twitterDescription" content="">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="css/style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="logo/t.b.e_logo.png">
+  <meta name="theme-color" content="#2563eb">
   <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -32,7 +44,15 @@
           <span class="heart-icon">❤️</span>
           <span class="like-count">0</span>
         </button>
-        <a href="#" id="shareBtn" class="btn btn-outline px-6 py-2.5 text-sm">Share</a>
+        <div class="share-dropdown relative">
+          <button id="shareBtn" class="btn btn-outline px-6 py-2.5 text-sm" aria-label="Share post" aria-haspopup="true" aria-expanded="false">Share</button>
+          <div id="shareMenu" class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-600 z-50">
+            <button onclick="shareTo('facebook')" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">📘 Facebook</button>
+            <button onclick="shareTo('twitter')" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">🐦 Twitter/X</button>
+            <button onclick="shareTo('whatsapp')" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">📱 WhatsApp</button>
+            <button onclick="shareTo('copy')" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">🔗 Copy Link</button>
+          </div>
+        </div>
       </div>
       <div id="postMedia" class="post-detail-media"></div>
       <div class="post-detail-body" id="postBody"></div>
@@ -70,6 +90,11 @@
   <script src="js/app.js"></script>
   <script src="js/lightbox.js"></script>
   <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js");
+    }
+  </script>
+  <script>
     document.addEventListener("DOMContentLoaded", () => {
       const urlParams = new URLSearchParams(window.location.search);
       const postId = urlParams.get("id");
@@ -85,6 +110,15 @@
       // Increment and display view count
       const viewCount = incrementViews(postId);
       document.getElementById("viewCount").textContent = viewCount;
+
+      // Set dynamic SEO meta tags
+      document.getElementById("pageTitle").textContent = `${post.title} | T.B.E Bazuri`;
+      document.getElementById("metaDescription").content = post.content.substring(0, 160) + (post.content.length > 160 ? "…" : "");
+      document.getElementById("ogTitle").content = post.title;
+      document.getElementById("ogDescription").content = post.content.substring(0, 160) + (post.content.length > 160 ? "…" : "");
+      document.getElementById("ogUrl").content = window.location.href;
+      document.getElementById("twitterTitle").content = post.title;
+      document.getElementById("twitterDescription").content = post.content.substring(0, 160) + (post.content.length > 160 ? "…" : "");
 
       document.getElementById("postTitle").textContent = post.title;
       document.getElementById("postDate").textContent = formatDate(post.createdAt);
@@ -116,6 +150,55 @@
         heartEl.textContent = result.liked ? "❤️" : "🤍";
         if (result.liked) likeBtn.classList.add("liked"); else likeBtn.classList.remove("liked");
       };
+      // Share functionality
+      const shareBtn = document.getElementById("shareBtn");
+      const shareMenu = document.getElementById("shareMenu");
+      const postUrl = window.location.href;
+      const postTitle = post.title;
+
+      shareBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        shareMenu.classList.toggle("hidden");
+        const expanded = shareBtn.getAttribute("aria-expanded") === "true";
+        shareBtn.setAttribute("aria-expanded", !expanded);
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!shareBtn.contains(e.target) && !shareMenu.contains(e.target)) {
+          shareMenu.classList.add("hidden");
+          shareBtn.setAttribute("aria-expanded", "false");
+        }
+      });
+
+      window.shareTo = function(platform) {
+        const text = encodeURIComponent(postTitle);
+        const url = encodeURIComponent(postUrl);
+        let shareUrl = "";
+
+        if (platform === "facebook") {
+          shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+        } else if (platform === "twitter") {
+          shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+        } else if (platform === "whatsapp") {
+          shareUrl = `https://wa.me/?text=${text}%20${url}`;
+        } else if (platform === "copy") {
+          navigator.clipboard.writeText(postUrl).then(() => {
+            showToast("Link copied to clipboard!", "success");
+          }).catch(() => {
+            showToast("Failed to copy link.", "error");
+          });
+          shareMenu.classList.add("hidden");
+          shareBtn.setAttribute("aria-expanded", "false");
+          return;
+        }
+
+        if (shareUrl) {
+          window.open(shareUrl, "_blank", "width=600,height=400");
+        }
+        shareMenu.classList.add("hidden");
+        shareBtn.setAttribute("aria-expanded", "false");
+      };
+
       document.getElementById("shareBtn").href = window.location.href;
     });
     function extractYouTubeId(url) { const match = url.match(/(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/); return match ? match[1] : null; }
