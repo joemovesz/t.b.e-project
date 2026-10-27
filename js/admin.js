@@ -28,6 +28,11 @@ function renderDashboard() {
           <span><span class="badge badge-${post.type} mr-2">${post.type.toUpperCase()}</span>${formatDate(post.createdAt)}</span>
           <span>❤️ ${getLikeCount(post.id)}</span>
         </div>
+        ${(post.categories || []).length > 0 ? `
+        <div class="flex gap-1">
+          ${(post.categories || []).map(cat => `<span class="badge text-xs">${escapeHtml(cat)}</span>`).join("")}
+        </div>
+        ` : ""}
       </div>
       <div class="admin-actions">
         <span class="${post.featured ? 'text-yellow-500' : 'text-gray-400'} text-xs font-bold" title="${post.featured ? 'Featured' : 'Not featured'}">

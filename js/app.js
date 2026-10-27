@@ -5,7 +5,7 @@ const STORAGE_KEY = "tbe_posts";
 const LIKES_KEY = "tbe_likes";
 
 // ---- Post Data Model ----
-function createPost(id, title, type, content, mediaUrl, featured = false) {
+function createPost(id, title, type, content, mediaUrl, featured = false, categories = []) {
   return {
     id,
     title,
@@ -13,6 +13,7 @@ function createPost(id, title, type, content, mediaUrl, featured = false) {
     content,
     mediaUrl,
     featured: !!featured,
+    categories: Array.isArray(categories) ? categories : [],
     createdAt: new Date().toISOString(),
     likes: 0
   };
@@ -194,6 +195,43 @@ function toggleFeatured(postId) {
   });
   savePosts(posts);
   return posts.find(p => p.id === postId);
+}
+
+// ---- Categories & Tags ----
+const CATEGORIES_KEY = "tbe_categories";
+
+function getCategories() {
+  try {
+    const raw = localStorage.getItem(CATEGORIES_KEY);
+    return raw ? JSON.parse(raw) : ["News", "Entertainment", "Sports", "Technology", "Lifestyle"];
+  } catch (e) {
+    return ["News", "Entertainment", "Sports", "Technology", "Lifestyle"];
+  }
+}
+
+function saveCategories(categories) {
+  localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
+}
+
+function addCategory(name) {
+  const cats = getCategories();
+  if (!cats.includes(name)) {
+    cats.push(name);
+    saveCategories(cats);
+  }
+  return cats;
+}
+
+// ---- Pagination ----
+const ITEMS_PER_PAGE = 6;
+
+function paginate(array, page, perPage = ITEMS_PER_PAGE) {
+  const start = (page - 1) * perPage;
+  return array.slice(start, start + perPage);
+}
+
+function getTotalPages(array, perPage = ITEMS_PER_PAGE) {
+  return Math.ceil(array.length / perPage);
 }
 
 // ---- View counter ----

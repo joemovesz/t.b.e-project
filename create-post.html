@@ -61,6 +61,19 @@
             placeholder="Write your content here..."></textarea>
         </div>
 
+        <div class="form-group">
+          <label for="categories" class="block text-sm font-medium text-gray-700">Categories</label>
+          <div class="flex flex-wrap gap-2" id="categoryChips">
+            <!-- Category chips will be injected here -->
+          </div>
+          <div class="flex gap-2 mt-2">
+            <input id="newCategoryInput" type="text" placeholder="Add new category…"
+              class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none sm:text-sm">
+            <button type="button" id="addCategoryBtn" class="px-4 py-2 border border-gray-300 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium text-sm">Add</button>
+          </div>
+          <p class="form-hint">Select categories for this post. Click a chip to toggle.</p>
+        </div>
+
         <div class="form-group" id="mediaGroup">
           <label for="mediaUrl" class="block text-sm font-medium text-gray-700">Media URL (Image / Video)</label>
           <input id="mediaUrl" name="mediaUrl" type="url"
@@ -135,6 +148,8 @@
           document.getElementById("content").value = post.content;
           document.getElementById("mediaUrl").value = post.mediaUrl || "";
           document.getElementById("featured").checked = post.featured === true;
+          selectedCategories = post.categories || [];
+          renderCategoryChips();
           // Show preview for base64 images
           if (post.mediaUrl && post.mediaUrl.startsWith("data:")) {
             previewImg.src = post.mediaUrl;
@@ -175,6 +190,50 @@
         }
       });
 
+      // Category chip handling
+      const categoryChipsContainer = document.getElementById("categoryChips");
+      const newCategoryInput = document.getElementById("newCategoryInput");
+      const addCategoryBtn = document.getElementById("addCategoryBtn");
+      let selectedCategories = [];
+
+      function renderCategoryChips() {
+        const categories = getCategories();
+        categoryChipsContainer.innerHTML = categories.map(cat => {
+          const isSelected = selectedCategories.includes(cat);
+          return `
+            <button type="button" class="category-chip px-3 py-1.5 rounded-full text-sm border font-medium transition-colors ${isSelected ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}" onclick="toggleCategoryChip('${escapeHtml(cat)}')">
+              ${escapeHtml(cat)}
+            </button>
+          `;
+        }).join("");
+      }
+
+      window.toggleCategoryChip = function(cat) {
+        if (selectedCategories.includes(cat)) {
+          selectedCategories = selectedCategories.filter(c => c !== cat);
+        } else {
+          selectedCategories.push(cat);
+        }
+        renderCategoryChips();
+      };
+
+      addCategoryBtn.addEventListener("click", () => {
+        const newCat = newCategoryInput.value.trim();
+        if (!newCat) return;
+        addCategory(newCat);
+        selectedCategories.push(newCat);
+        newCategoryInput.value = "";
+        renderCategoryChips();
+      });
+
+      newCategoryInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          addCategoryBtn.click();
+        }
+      });
+
+      renderCategoryChips();
+
       // Image file preview
       const imageFileInput = document.getElementById("imageFile");
       const previewImg = document.getElementById("previewImg");
@@ -209,6 +268,7 @@
         const type = typeSelect.value;
         const content = document.getElementById("content").value.trim();
         const featured = document.getElementById("featured").checked;
+        const categories = [...selectedCategories];
         let mediaUrl = document.getElementById("mediaUrl").value.trim() || null;
 
         // Use base64 image from file upload if available
@@ -223,10 +283,10 @@
         }
 
         if (isEditing) {
-          updatePost(editId, { title, type, content, mediaUrl, featured });
+          updatePost(editId, { title, type, content, mediaUrl, featured, categories });
           showToast("Post updated successfully!", "success");
         } else {
-          const post = createPost(generateId(), title, type, content, mediaUrl, featured);
+          const post = createPost(generateId(), title, type, content, mediaUrl, featured, categories);
           addPost(post);
           showToast("Post published successfully!", "success");
         }
