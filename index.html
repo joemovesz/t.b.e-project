@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>T.B.E Bazuri | Premium Content Hub</title>
+  <meta name="description" content="Videos, images, news and more — curated by T.B.E Bazuri">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+  <!-- Navbar -->
+  <nav class="navbar bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+    <div class="container">
+      <a href="index.html" class="logo">T<span class="text-gray-800">.</span>B<span class="text-gray-800">.</span>E Bazuri</a>
+
+      <div class="nav-links" id="navLinks">
+        <a href="index.html" class="text-gray-600 hover:text-blue-600 font-medium">Home</a>
+        <span id="authLink"></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero py-12 bg-white">
+    <div class="container">
+      <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
+        Premium Content,<br>
+        Curated by Admins
+      </h1>
+      <p class="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+        Discover the latest videos, images, and news from T.B.E Bazuri. Only authorized administrators can publish content.
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="#" id="viewPostsBtn" class="btn btn-primary px-8 py-3 text-lg">
+          Browse Content
+        </a>
+        <a href="admin-login.html" id="adminBtn" class="btn btn-outline px-8 py-3 text-lg hidden">
+          Admin Login
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Posts Grid -->
+  <section class="py-12">
+    <div class="container">
+      <div class="flex justify-between items-end mb-8 flex-wrap gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-gray-900 mb-2">Latest Content</h2>
+          <p class="text-gray-500">All posts are published by verified administrators.</p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3 sm:items-end">
+          <div class="relative w-full sm:w-64">
+            <input type="text" id="searchInput" placeholder="Search posts…"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none sm:text-sm">
+          </div>
+          <select id="typeFilter"
+            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white sm:text-sm">
+            <option value="all">All Types</option>
+            <option value="news">News</option>
+            <option value="image">Image</option>
+            <option value="video">Video</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="postsGrid" class="posts-grid">
+        <!-- Posts injected here by JS -->
+      </div>
+
+      <div id="emptyState" class="empty-state hidden">
+        <h3 class="text-xl font-bold text-gray-900 mb-2">No content yet</h3>
+        <p class="text-gray-500">Check back soon for new posts from our administrators.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-gray-200 bg-white py-8 mt-12">
+    <div class="container">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+        <p class="text-gray-500 text-sm">&copy; 2026 T.B.E Bazuri. All rights reserved.</p>
+        <div class="flex gap-4 text-gray-400 text-sm">
+          <span>Admin: tebangenebazuri@gmail.com</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/home.js"></script>
+</body>
+</html>

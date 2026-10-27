@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Post | T.B.E Bazuri</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <nav class="navbar bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+    <div class="container">
+      <a href="index.html" class="logo">T<span class="text-gray-800">.</span>B<span class="text-gray-800">.</span>E Bazuri</a>
+      <div class="nav-links" id="navLinks">
+        <a href="index.html" class="text-gray-600 hover:text-blue-600 font-medium">← Back to Home</a>
+        <span id="authLink"></span>
+      </div>
+    </div>
+  </nav>
+  <section class="post-detail-header">
+    <div class="container">
+      <div class="post-detail-meta">
+        <span id="postTypeBadge" class="badge"></span>
+        <span class="text-gray-500 text-sm" id="postDate"></span>
+        <span class="text-gray-500 text-sm" id="postViews">👁️ <span id="viewCount">0</span> views</span>
+      </div>
+      <h1 class="post-detail-title" id="postTitle"></h1>
+      <div class="post-detail-actions">
+        <button class="like-btn" id="likeBtn" onclick="handleLikeDetail()" aria-label="Like post">
+          <span class="heart-icon">❤️</span>
+          <span class="like-count">0</span>
+        </button>
+        <a href="#" id="shareBtn" class="btn btn-outline px-6 py-2.5 text-sm">Share</a>
+      </div>
+      <div id="postMedia" class="post-detail-media"></div>
+      <div class="post-detail-body" id="postBody"></div>
+    </div>
+  </section>
+  <!-- Giscus Comments -->
+  <section class="giscus-comments">
+    <div class="container">
+      <div class="post-detail-content">
+        <h3 class="text-xl font-bold text-gray-900 mb-6">Comments</h3>
+        <div class="giscus-container">
+          <script src="https://giscus.app/client.js"
+            data-repo="joemovesz/t.b.e-project"
+            data-repo-id="R_kgDOVZMFuA"
+            data-category="[ENTER CATEGORY NAME HERE]"
+            data-category-id="[ENTER CATEGORY ID HERE]"
+            data-mapping="url"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="preferred_color_scheme"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+          </script>
+        </div>
+        <p class="mt-4 text-sm text-gray-500 text-center"><em>Comments powered by GitHub Discussions (Giscus). Sign in to GitHub to comment.</em></p>
+      </div>
+    </div>
+  </section>
+  <footer class="border-t border-gray-200 bg-white py-8 mt-12">
+    <div class="container"><p class="text-gray-500 text-sm text-center">&copy; 2026 T.B.E Bazuri. All rights reserved.</p></div>
+  </footer>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const postId = urlParams.get("id");
+      if (!postId) { window.location.href = "index.html"; return; }
+      const post = getPostById(postId);
+      if (!post) {
+        document.body.innerHTML = "<div class='container text-center py-20'><h2 class='text-2xl font-bold text-gray-900'>Post not found</h2><p class='text-gray-500 mt-4'>The post doesn't exist.</p><a href='index.html' class='btn btn-primary mt-6'>Go Home</a></div>";
+        return;
+      }
+      const authLink = document.getElementById("authLink");
+      if (isAdmin()) { authLink.innerHTML = "<a href='#' onclick='logout()' class='text-gray-600 hover:text-red-600 font-medium px-3 py-1 rounded hover:bg-red-50'>Logout</a>"; }
+      else { authLink.innerHTML = "<a href='admin-login.html' class='text-gray-600 hover:text-blue-600 font-medium px-3 py-1 rounded hover:bg-blue-50'>Admin Login</a>"; }
+      // Increment and display view count
+      const viewCount = incrementViews(postId);
+      document.getElementById("viewCount").textContent = viewCount;
+
+      document.getElementById("postTitle").textContent = post.title;
+      document.getElementById("postDate").textContent = formatDate(post.createdAt);
+      document.getElementById("postBody").textContent = post.content;
+      const typeBadge = document.getElementById("postTypeBadge");
+      typeBadge.className = "badge badge-" + post.type;
+      typeBadge.textContent = post.type.toUpperCase();
+      const mediaEl = document.getElementById("postMedia");
+      if (post.type === "video" && post.mediaUrl) {
+        const videoId = extractYouTubeId(post.mediaUrl);
+        if (videoId) { mediaEl.innerHTML = '<iframe src="https://www.youtube.com/embed/' + videoId + '" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>'; }
+        else { mediaEl.innerHTML = '<video src="' + escapeHtml(post.mediaUrl) + '" controls class="w-full h-full object-cover"></video>'; }
+      } else if (post.type === "image" && post.mediaUrl) {
+        mediaEl.innerHTML = '<img src="' + escapeHtml(post.mediaUrl) + '" alt="' + escapeHtml(post.title) + '" class="w-full h-full object-cover">';
+      } else {
+        mediaEl.innerHTML = '<div class="flex items-center justify-center h-full bg-gray-100 text-gray-400 text-sm">No media attached</div>';
+      }
+      const likeBtn = document.getElementById("likeBtn");
+      const countEl = likeBtn.querySelector(".like-count");
+      const heartEl = likeBtn.querySelector(".heart-icon");
+      const liked = hasUserLiked(postId);
+      const likeCount = getLikeCount(postId);
+      countEl.textContent = likeCount;
+      heartEl.textContent = liked ? "❤️" : "🤍";
+      if (liked) likeBtn.classList.add("liked");
+      window.handleLikeDetail = function() {
+        const result = toggleLike(postId);
+        countEl.textContent = result.likes;
+        heartEl.textContent = result.liked ? "❤️" : "🤍";
+        if (result.liked) likeBtn.classList.add("liked"); else likeBtn.classList.remove("liked");
+      };
+      document.getElementById("shareBtn").href = window.location.href;
+    });
+    function extractYouTubeId(url) { const match = url.match(/(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/); return match ? match[1] : null; }
+    function escapeHtml(text) { const div = document.createElement("div"); div.textContent = text; return div.innerHTML; }
+  </script>
+</body>
+</html>

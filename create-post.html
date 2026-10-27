@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Post | T.B.E Bazuri</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+  <!-- Navbar -->
+  <nav class="navbar bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+    <div class="container">
+      <a href="admin-dashboard.html" class="logo">T<span class="text-gray-800">.</span>B<span class="text-gray-800">.</span>E Bazuri</a>
+
+      <div class="nav-links">
+        <a href="admin-dashboard.html" class="text-gray-600 hover:text-blue-600 font-medium">← Dashboard</a>
+        <a href="#" onclick="logout()" class="text-gray-600 hover:text-red-600 font-medium px-3 py-1 rounded hover:bg-red-50">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-8">
+    <div class="page-header">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900">Create New Post</h2>
+        <p class="text-gray-500 text-sm">Publish content as administrator</p>
+      </div>
+    </div>
+
+    <div id="alertContainer"></div>
+
+    <div class="form-container">
+      <form id="postForm" class="space-y-6">
+        <input type="hidden" id="editId" name="editId" value="">
+        <div class="form-group">
+          <label for="title" class="block text-sm font-medium text-gray-700">Post Title</label>
+          <input id="title" name="title" type="text" required
+            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            placeholder="Enter post title">
+        </div>
+
+        <div class="form-group">
+          <label for="type" class="block text-sm font-medium text-gray-700">Content Type</label>
+          <select id="type" name="type" required
+            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            <option value="news">News</option>
+            <option value="image">Image</option>
+            <option value="video">Video</option>
+          </select>
+          <p class="form-hint">Choose the type of content you are publishing.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="content" class="block text-sm font-medium text-gray-700">Content / Description</label>
+          <textarea id="content" name="content" required rows="5"
+            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            placeholder="Write your content here..."></textarea>
+        </div>
+
+        <div class="form-group" id="mediaGroup">
+          <label for="mediaUrl" class="block text-sm font-medium text-gray-700">Media URL (Image / Video)</label>
+          <input id="mediaUrl" name="mediaUrl" type="url"
+            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            placeholder="https://example.com/image.jpg or YouTube URL">
+          <p class="form-hint">For videos, paste a YouTube link. For images, paste a direct image URL. Leave blank for news-only posts.</p>
+        </div>
+
+        <div class="form-group pt-4">
+          <button type="submit" id="submitBtn" class="btn btn-primary px-8 py-3">
+            Publish Post
+          </button>
+          <button type="button" onclick="window.location.href='admin-dashboard.html'" class="btn btn-outline ml-2 px-6 py-3">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/toast.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      requireAdmin();
+
+      const form = document.getElementById("postForm");
+      const typeSelect = document.getElementById("type");
+      const mediaGroup = document.getElementById("mediaGroup");
+      const editIdInput = document.getElementById("editId");
+      const submitBtn = document.getElementById("submitBtn");
+
+      // Check for edit mode
+      const urlParams = new URLSearchParams(window.location.search);
+      const editId = urlParams.get("id");
+      let isEditing = false;
+
+      if (editId) {
+        const post = getPostById(editId);
+        if (post) {
+          isEditing = true;
+          editIdInput.value = post.id;
+          document.getElementById("title").value = post.title;
+          typeSelect.value = post.type;
+          document.getElementById("content").value = post.content;
+          document.getElementById("mediaUrl").value = post.mediaUrl || "";
+          submitBtn.textContent = "Update Post";
+          // Show media field for non-news types
+          if (post.type === "news") {
+            mediaGroup.style.display = "none";
+          } else {
+            mediaGroup.style.display = "block";
+          }
+          document.querySelector("h2").textContent = "Edit Post";
+          document.querySelector(".page-header p").textContent = "Modify existing content";
+        } else {
+          showAlert("Post not found.", "error");
+          setTimeout(() => { window.location.href = "admin-dashboard.html"; }, 1500);
+        }
+      }
+
+      // Show/hide media field based on type
+      typeSelect.addEventListener("change", () => {
+        if (typeSelect.value === "news") {
+          mediaGroup.style.display = "none";
+        } else {
+          mediaGroup.style.display = "block";
+        }
+      });
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const title = document.getElementById("title").value.trim();
+        const type = typeSelect.value;
+        const content = document.getElementById("content").value.trim();
+        const mediaUrl = document.getElementById("mediaUrl").value.trim() || null;
+
+        if (!title || !content) {
+          showToast("Please fill in title and content.", "error");
+          return;
+        }
+
+        if (isEditing) {
+          updatePost(editId, { title, type, content, mediaUrl });
+          showToast("Post updated successfully!", "success");
+        } else {
+          const post = createPost(generateId(), title, type, content, mediaUrl);
+          addPost(post);
+          showToast("Post published successfully!", "success");
+        }
+
+        form.reset();
+        setTimeout(() => {
+          window.location.href = "admin-dashboard.html";
+        }, 1200);
+      });
+    });
+
+  </script>
+</body>
+</html>
