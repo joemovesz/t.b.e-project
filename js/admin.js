@@ -30,6 +30,12 @@ function renderDashboard() {
         </div>
       </div>
       <div class="admin-actions">
+        <span class="${post.featured ? 'text-yellow-500' : 'text-gray-400'} text-xs font-bold" title="${post.featured ? 'Featured' : 'Not featured'}">
+          ${post.featured ? '📌' : '📄'}
+        </span>
+        <button onclick="toggleFeaturedConfirm('${post.id}')" class="btn btn-outline btn-sm">
+          ${post.featured ? 'Unfeature' : 'Feature'}
+        </button>
         <a href="create-post.html?id=${post.id}" class="btn btn-outline btn-sm">
           Edit
         </a>
@@ -49,6 +55,30 @@ function getMediaThumb(post) {
     return `<div class="flex items-center justify-center h-full bg-gray-200 text-gray-500 text-xs font-medium">▶️ Video</div>`;
   }
   return `<div class="flex items-center justify-center h-full bg-gray-100 text-gray-400 text-xs">📰 News</div>`;
+}
+
+function toggleFeaturedConfirm(id) {
+  const result = toggleFeatured(id);
+  renderDashboard();
+  showToast(result.featured ? "Post featured!" : "Post unfeatured.", "success");
+}
+
+function handleImport(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const result = importData(e.target.result);
+    if (result.success) {
+      showToast(`Imported ${result.posts} posts successfully!`, "success");
+      renderDashboard();
+    } else {
+      showToast("Import failed: " + result.error, "error");
+    }
+    input.value = "";
+  };
+  reader.readAsText(file);
 }
 
 function deletePostConfirm(id) {

@@ -66,7 +66,28 @@
           <input id="mediaUrl" name="mediaUrl" type="url"
             class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             placeholder="https://example.com/image.jpg or YouTube URL">
-          <p class="form-hint">For videos, paste a YouTube link. For images, paste a direct image URL. Leave blank for news-only posts.</p>
+          <p class="form-hint">For videos, paste a YouTube link. For images, paste a direct image URL or upload a file below. Leave blank for news-only posts.</p>
+        </div>
+
+        <div class="form-group" id="fileUploadGroup" style="display: none;">
+          <label for="imageFile" class="block text-sm font-medium text-gray-700">Upload Image File</label>
+          <input id="imageFile" name="imageFile" type="file" accept="image/*"
+            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 sm:text-sm">
+          <div id="imagePreview" class="image-preview mt-3">
+            <img id="previewImg" src="" alt="Preview" class="hidden">
+            <p id="previewText" class="text-sm text-gray-500">No file selected</p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="flex items-center gap-2">
+            <input type="checkbox" id="featured" name="featured"
+              class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+            <label for="featured" class="text-sm font-medium text-gray-700 cursor-pointer">
+              📌 Featured Post (pin to top)
+            </label>
+          </div>
+          <p class="form-hint">Featured posts appear at the top of the homepage.</p>
         </div>
 
         <div class="form-group pt-4">
@@ -85,6 +106,12 @@
   <script src="js/toast.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      // Initialize theme
+      const theme = getTheme();
+      if (theme === "dark") {
+        document.documentElement.classList.add("dark");
+      }
+
       requireAdmin();
 
       const form = document.getElementById("postForm");
@@ -107,6 +134,15 @@
           typeSelect.value = post.type;
           document.getElementById("content").value = post.content;
           document.getElementById("mediaUrl").value = post.mediaUrl || "";
+          document.getElementById("featured").checked = post.featured === true;
+          // Show preview for base64 images
+          if (post.mediaUrl && post.mediaUrl.startsWith("data:")) {
+            previewImg.src = post.mediaUrl;
+            previewImg.classList.remove("hidden");
+            previewText.textContent = "Existing uploaded image";
+            imagePreview.classList.remove("hidden");
+            document.getElementById("fileUploadGroup").style.display = "block";
+          }
           submitBtn.textContent = "Update Post";
           // Show media field for non-news types
           if (post.type === "news") {
@@ -124,10 +160,45 @@
 
       // Show/hide media field based on type
       typeSelect.addEventListener("change", () => {
-        if (typeSelect.value === "news") {
+        const type = typeSelect.value;
+        if (type === "news") {
           mediaGroup.style.display = "none";
+          document.getElementById("fileUploadGroup").style.display = "none";
         } else {
           mediaGroup.style.display = "block";
+          // Show file upload for images, hide for video
+          if (type === "image") {
+            document.getElementById("fileUploadGroup").style.display = "block";
+          } else {
+            document.getElementById("fileUploadGroup").style.display = "none";
+          }
+        }
+      });
+
+      // Image file preview
+      const imageFileInput = document.getElementById("imageFile");
+      const previewImg = document.getElementById("previewImg");
+      const previewText = document.getElementById("previewText");
+      const imagePreview = document.getElementById("imagePreview");
+
+      imageFileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            previewImg.src = event.target.result;
+            previewImg.classList.remove("hidden");
+            previewText.textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+            imagePreview.classList.remove("hidden");
+            // Clear URL field when file is selected
+            document.getElementById("mediaUrl").value = "";
+          };
+          reader.readAsDataURL(file);
+        } else {
+          previewImg.src = "";
+          previewImg.classList.add("hidden");
+          previewText.textContent = "No file selected";
+          imagePreview.classList.add("hidden");
         }
       });
 
@@ -137,7 +208,14 @@
         const title = document.getElementById("title").value.trim();
         const type = typeSelect.value;
         const content = document.getElementById("content").value.trim();
-        const mediaUrl = document.getElementById("mediaUrl").value.trim() || null;
+        const featured = document.getElementById("featured").checked;
+        let mediaUrl = document.getElementById("mediaUrl").value.trim() || null;
+
+        // Use base64 image from file upload if available
+        const previewSrc = previewImg.src;
+        if (previewSrc && !previewSrc.includes("127.0.0.1") && previewSrc.startsWith("data:")) {
+          mediaUrl = previewSrc;
+        }
 
         if (!title || !content) {
           showToast("Please fill in title and content.", "error");
@@ -145,10 +223,10 @@
         }
 
         if (isEditing) {
-          updatePost(editId, { title, type, content, mediaUrl });
+          updatePost(editId, { title, type, content, mediaUrl, featured });
           showToast("Post updated successfully!", "success");
         } else {
-          const post = createPost(generateId(), title, type, content, mediaUrl);
+          const post = createPost(generateId(), title, type, content, mediaUrl, featured);
           addPost(post);
           showToast("Post published successfully!", "success");
         }

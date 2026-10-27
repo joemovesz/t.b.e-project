@@ -5,13 +5,14 @@ const STORAGE_KEY = "tbe_posts";
 const LIKES_KEY = "tbe_likes";
 
 // ---- Post Data Model ----
-function createPost(id, title, type, content, mediaUrl) {
+function createPost(id, title, type, content, mediaUrl, featured = false) {
   return {
     id,
     title,
     type, // 'video' | 'image' | 'news'
     content,
     mediaUrl,
+    featured: !!featured,
     createdAt: new Date().toISOString(),
     likes: 0
   };
@@ -183,6 +184,18 @@ function formatRelativeDate(isoString) {
   return formatDate(isoString);
 }
 
+// ---- Featured Posts ----
+function toggleFeatured(postId) {
+  const posts = getPosts().map(p => {
+    if (p.id === postId) {
+      return { ...p, featured: !p.featured };
+    }
+    return p;
+  });
+  savePosts(posts);
+  return posts.find(p => p.id === postId);
+}
+
 // ---- View counter ----
 const VIEWS_KEY = "tbe_views";
 
@@ -204,4 +217,66 @@ function incrementViews(postId) {
 
 function getViewCount(postId) {
   return (getViews()[postId] || 0);
+}
+
+// ---- Theme (Dark/Light Mode) ----
+const THEME_KEY = "tbe_theme";
+
+function getTheme() {
+  return localStorage.getItem(THEME_KEY) || (
+    window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+  );
+}
+
+function setTheme(theme) {
+  localStorage.setItem(THEME_KEY, theme);
+  if (theme === "dark") {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+}
+
+function toggleTheme() {
+  const current = getTheme();
+  const next = current === "dark" ? "light" : "dark";
+  setTheme(next);
+  return next;
+}
+
+// ---- Data Export / Import ----
+function exportData() {
+  const data = {
+    posts: getPosts(),
+    likes: getLikes(),
+    views: getViews(),
+    exportedAt: new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `tbe-backup-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importData(jsonString) {
+  try {
+    const data = JSON.parse(jsonString);
+    if (data.posts && Array.isArray(data.posts)) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data.posts));
+    }
+    if (data.likes) {
+      localStorage.setItem(LIKES_KEY, JSON.stringify(data.likes));
+    }
+    if (data.views) {
+      localStorage.setItem(VIEWS_KEY, JSON.stringify(data.views));
+    }
+    return { success: true, posts: data.posts.length };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
 }

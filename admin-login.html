@@ -50,6 +50,12 @@
   <script src="js/app.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      // Initialize theme
+      const theme = getTheme();
+      if (theme === "dark") {
+        document.documentElement.classList.add("dark");
+      }
+
       // If already logged in, redirect to dashboard
       if (isAdmin()) {
         window.location.href = "admin-dashboard.html";

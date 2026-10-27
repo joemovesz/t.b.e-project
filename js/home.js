@@ -34,18 +34,29 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // Sort: featured posts first, then by date
+    const sorted = [...postsToRender].sort((a, b) => {
+      if (a.featured && !b.featured) return -1;
+      if (!a.featured && b.featured) return 1;
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+
     emptyState.classList.add("hidden");
-    postsGrid.innerHTML = postsToRender.map(post => {
+    postsGrid.innerHTML = sorted.map(post => {
       const likeCount = getLikeCount(post.id);
       const liked = hasUserLiked(post.id);
       const viewCount = getViewCount(post.id);
       const mediaHtml = getMediaHtml(post);
+      const featuredBadge = post.featured ? `<span class="badge" style="background:var(--accent);color:#fff;">📌 FEATURED</span>` : "";
 
       return `
-        <article class="post-card post-card-group">
+        <article class="post-card post-card-group ${post.featured ? 'featured-post' : ''}">
           ${mediaHtml}
           <div class="post-content">
-            <span class="post-type badge badge-${post.type}">${post.type.toUpperCase()}</span>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="post-type badge badge-${post.type}">${post.type.toUpperCase()}</span>
+              ${featuredBadge}
+            </div>
             <h3 class="post-title"><a href="post-detail.html?id=${post.id}" style="text-decoration:none; color:inherit">${escapeHtml(post.title)}</a></h3>
             <p class="post-excerpt">${escapeHtml(post.content.substring(0, 120))}${post.content.length > 120 ? "…" : ""}</p>
             <div class="post-footer">

@@ -33,6 +33,13 @@
       <a href="create-post.html" class="btn btn-primary px-6 py-2.5">
         <span>+ New Post</span>
       </a>
+      <button onclick="exportData()" class="btn btn-outline px-6 py-2.5">
+        📤 Export Backup
+      </button>
+      <label for="importFile" class="btn btn-outline px-6 py-2.5">
+        📥 Import Backup
+        <input type="file" id="importFile" accept=".json" class="hidden" onchange="handleImport(this)">
+      </label>
     </div>
 
     <div id="alertContainer"></div>
@@ -52,6 +59,12 @@
   <script src="js/admin.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      // Initialize theme
+      const theme = getTheme();
+      if (theme === "dark") {
+        document.documentElement.classList.add("dark");
+      }
+
       requireAdmin();
       renderDashboard();
     });

@@ -66,6 +66,17 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica
 .alert-success { background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; }
 .empty-state { text-align:center; padding:4rem 2rem; color:var(--text-muted); }
 .empty-state h3 { font-size:1.25rem; font-weight:700; color:var(--text); margin-bottom:0.5rem; }
+/* Dark Mode Variables */
+.dark {
+  --bg: #0f172a;
+  --card-bg: #1e293b;
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --border: #334155;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+}
+
 /* part 3 */
 .post-detail-header { background:#fff; border-bottom:1px solid var(--border); padding:2rem 0; margin-bottom:2rem; }
 .post-detail-content { max-width:800px; margin:0 auto; padding:0 1.5rem; }
@@ -84,6 +95,66 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica
   .admin-post-card { flex-direction:column; align-items:flex-start; }
   .admin-actions { width:100%; justify-content:flex-end; margin-top:1rem; }
   .post-detail-actions { flex-direction:column; }
+/* Featured Post Styling */
+.featured-post { border: 2px solid var(--accent); }
+.featured-post .post-media { position: relative; }
+.featured-post .post-media::after {
+  content: "📌 Featured";
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* Dark Mode Overrides */
+.dark .hero { background: #0f172a; }
+.dark .hero h1 { color: #f8fafc; }
+.dark .hero p { color: #94a3b8; }
+.dark .navbar { background: #1e293b; border-bottom-color: #334155; }
+.dark .navbar .container { color: #f8fafc; }
+.dark .nav-links a { color: #94a3b8; }
+.dark .nav-links a:hover { color: #60a5fa; }
+.dark .logo { color: #60a5fa; }
+.dark .post-detail-header { background: #1e293b; border-bottom-color: #334155; }
+.dark .post-detail-title { color: #f8fafc; }
+.dark .post-detail-body { color: #cbd5e1; }
+.dark .post-media { background: #334155; }
+.dark .post-media.bg-gray-100 { background: #334155; }
+.dark .post-media.bg-gray-100 .text-gray-400 { color: #94a3b8; }
+.dark .admin-post-card { background: #1e293b; border-color: #334155; }
+.dark .admin-post-title { color: #f8fafc; }
+.dark .admin-post-title:hover { color: #60a5fa; }
+.dark .admin-post-meta { color: #94a3b8; }
+.dark .admin-post-media { background: #334155; }
+.dark .form-container { background: #1e293b; border-color: #334155; }
+.dark .form-group label { color: #f8fafc; }
+.dark .form-group input, .dark .form-group textarea, .dark .form-group select {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f8fafc;
+}
+.dark .form-group input:focus, .dark .form-group textarea:focus, .dark .form-group select:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+.dark .form-hint { color: #94a3b8; }
+.dark .alert-error { background: #7f1d1d; color: #fca5a5; border-color: #991b1b; }
+.dark .alert-success { background: #14532d; color: #bbf7d0; border-color: #166534; }
+.dark .empty-state { color: #94a3b8; }
+.dark .empty-state h3 { color: #f8fafc; }
+.dark .image-preview { background: #334155; border-color: #475569; }
+.dark .image-preview img { filter: brightness(0.9); }
+.dark .modal { background: #1e293b; }
+.dark .modal h3 { color: #f8fafc; }
+.dark .modal p { color: #94a3b8; }
+.dark footer { background: #1e293b; border-top-color: #334155; }
+.dark footer p { color: #94a3b8; }
+
 /* part 4 - Phase 2 enhancements */
 .toast-container {
   position: fixed;
